@@ -22,3 +22,5 @@ files{
     "html/FWMS-1-3.png",
     "html/FWMS-Empty.png"
 }
+
+shared_script 'config.lua'

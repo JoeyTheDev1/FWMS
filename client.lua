@@ -1,4 +1,4 @@
-print("Fire Water Management System - Loaded Successfully")
+
 
 
 -- Variables --
@@ -13,7 +13,6 @@ local drawLineOnTruck
 local vehicleHandle
 local activeVehicle
 local hydrantMode = false
-local hydrants = {200846641, 687935120, -366155374, -97646180}
 activeHydrant = nil
 hydrantLocation = nil
 local findHydrant = false
@@ -46,10 +45,12 @@ Citizen.CreateThread(function()
             vehicleModel = GetEntityModel(vehicleHandle)
             vehicleHandle = NetworkGetNetworkIdFromEntity(vehicleHandle)
             SetNetworkIdExistsOnAllMachines(vehicleHandle, true)
-            if vehicleModel == fireModel then
+            for i,x in pairs(fireModels) do
+                if vehicleModel == GetHashKey(x) then
                 TriggerServerEvent("getWaterLevel", vehicleHandle)
                 firetruckLocation = GetEntityCoords(NetworkGetEntityFromNetworkId(vehicleHandle))
                 activeVehicle = vehicleHandle
+                end
             end
         end
         Citizen.Wait(100)
@@ -177,7 +178,7 @@ Citizen.CreateThread(function()
         if findHydrant == true then
             local pos = GetEntityCoords(GetPlayerPed(-1))
             for i,v in pairs(hydrants) do
-                lookingHydrant = GetClosestObjectOfType(pos.x, pos.y, pos.z, 3.0, v, false, false, false)
+                lookingHydrant = GetClosestObjectOfType(pos.x, pos.y, pos.z, 3.0, GetHashKey(v), false, false, false)
                 if lookingHydrant ~= 0 then
                     activeHydrant = lookingHydrant
                     hydrantLocation = GetEntityCoords(activeHydrant)
@@ -263,3 +264,18 @@ Citizen.CreateThread(function()
     Citizen.Wait(1)
     end
 end)
+
+-- Filling Tank When Connected --
+
+Citizen.CreateThread(function()
+    while true do
+        if waterConnected == true then
+            TriggerServerEvent('fillTank', activeVehicle)
+        else
+            Citizen.Wait(500)
+        end
+    Citizen.Wait(500)
+    end
+end)
+
+print("Fire Water Management System" .. FWMSVersion .. "Loaded Successfully")
