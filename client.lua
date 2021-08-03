@@ -18,6 +18,14 @@ hydrantLocation = nil
 local findHydrant = false
 local waterConnected = false
 local holdingSupplyLine = false
+local debugMode = false
+
+-- Progress Management Variables --
+local noProgress = true
+local begunHydrant = false
+local hydrantConnectedSupply = false
+local firetruckConnectSupply = false
+local allConnected = false
 
 -- Events --
 
@@ -78,7 +86,7 @@ Citizen.CreateThread(function()
                 end
             end
         end
-    Citizen.Wait(20)
+    Citizen.Wait(1)
     end
 end)
 
@@ -158,9 +166,11 @@ Citizen.CreateThread(function()
     while true do
         if isFireTruckClose() == true then
             if IsControlJustReleased(0, 29) then
-                if hydrantMode == true then
+                if noProgress == true then
                     findHydrant = true
                     hydrantMode = false
+                    begunHydrant = true
+                    noProgress = false
                 elseif hydrantMode == false then
                     findHydrant = true
                     hydrantMode = true
@@ -194,9 +204,12 @@ end)
 Citizen.CreateThread(function()
     while true do
         if hydrantLocation ~= nil then
-            local pos = GetEntityCoords(GetPlayerPed(-1))
-            if Vdist(pos.x, pos.y, pos.z, hydrantLocation.x, hydrantLocation.y, hydrantLocation.z) < 5.0 then
-                Draw3DText(hydrantLocation.x, hydrantLocation.y, hydrantLocation.z + 0.3, 0.25, "Press ~r~E~s~ to connect to the hydrant")
+            if isActiveHydrantClose() then
+                if findHydrant == true and begunHydrant == true then
+                    Draw3DText(hydrantLocation.x, hydrantLocation.y, hydrantLocation.z + 0.3, 0.25, "Press ~r~E~s~ to connect to the hydrant")
+                elseif waterConnected == true then
+                    Draw3DText(hydrantLocation.x, hydrantLocation.y, hydrantLocation.z + 0.3, 0.25, "Press ~r~E~s~ to to disconnect from hydrant")
+                end
             end
         end
     Citizen.Wait(1)
@@ -208,9 +221,9 @@ end)
 Citizen.CreateThread(function()
     while true do
         if isFireTruckClose() == true then
-            if findHydrant == false and hydrantMode == true then
+            if hydrantMode == true and noProgress == true then
                 Draw3DText(firetruckLocation.x, firetruckLocation.y, firetruckLocation.z - 0.5, 0.25, "Press ~r~B~s~ to begin hooking up a Fire Hydrant")
-            elseif findHydrant == false and activeHydrant ~= nil then
+            elseif findHydrant == false and activeHydrant ~= nil and hydrantConnectedSupply == true then
                 Draw3DText(firetruckLocation.x, firetruckLocation.y, firetruckLocation.z - 0.5, 0.25, "Press ~r~B~s~ to connect your hydrant")
             elseif waterConnected == true then
                 Draw3DText(firetruckLocation.x, firetruckLocation.y, firetruckLocation.z - 0.5, 0.25, "Press ~r~B~s~ to disconnect your hydrant")
@@ -224,14 +237,29 @@ end)
 
 Citizen.CreateThread(function()
     while true do
-        if isActiveHydrantClose() == true and waterConnected == false then
-            if IsControlJustReleased(0, 54) then
-                findHydrant = false
-                holdingSupplyLine = true
-                exports['t-notify']:Alert({
-                    style = 'success', 
-                    message = 'Return to your truck to connect your line!'
-                })
+        if isActiveHydrantClose() == true then
+            if findHydrant == true then
+                if IsControlJustReleased(0, 54) then
+                    findHydrant = false
+                    holdingSupplyLine = true
+                    begunHydrant = false
+                    hydrantConnectedSupply = true
+                    exports['t-notify']:Alert({
+                        style = 'success', 
+                        message = 'Line connected to hydrant, return to your truck to connect to your engine.'
+                    })
+                end
+            elseif findHydrant == false and waterConnected == true then
+                if IsControlJustReleased(0, 54) then
+                    holdingSupplyLine = false
+                    waterConnected = false
+                    exports['t-notify']:Alert({
+                        style = 'success', 
+                        message = 'Line disconnected from hydrant.'
+                    })
+                    noProgress = true
+                    allConnected = false
+                end
             end
         end
     Citizen.Wait(1)
@@ -250,15 +278,22 @@ Citizen.CreateThread(function()
                 })
                 holdingSupplyLine = false
                 waterConnected = true
+                findHydrant = false
+                allConnected = true
+                hydrantConnectedSupply = false
             end
-        elseif isFireTruckClose() == true and holdingSupplyLine == false and activeHydrant ~= nil then
+        elseif isFireTruckClose() == true and allConnected == true then
             if IsControlJustReleased(0, 29) then
                 exports['t-notify']:Alert({
                     style = 'success', 
-                    message = 'Line Dis-Connected!'
+                    message = 'Line Disconnected!'
                 })
-                holdingSupplyLine = true
+                print("Line disconnected")
+                findHydrant = false
+                holdingSupplyLine = false
                 waterConnected = false
+                allConnected = false
+                noProgress = true
             end
         end
     Citizen.Wait(1)
@@ -278,4 +313,36 @@ Citizen.CreateThread(function()
     end
 end)
 
+
 print("Fire Water Management System" .. FWMSVersion .. "Loaded Successfully")
+
+-- Debugging --
+
+RegisterCommand("fwmsdebugmode", function()
+    if debugMode == false then
+        debugMode = true
+    else
+        debugMode = false
+    end
+end)
+
+RegisterCommand("fwmsvarreset", function()
+    holdingSupplyLine = false
+    waterConnected = false
+    findHydrant = false
+    hydrantMode = false
+end)
+
+Citizen.CreateThread(function()
+    while true do
+        if debugMode == true then
+            print("Holding Supply Line ", holdingSupplyLine)
+            print("waterConnected ", waterConnected)
+            print("findHydrant ", findHydrant)
+            print("Hydrant Mode ", hydrantMode)
+            print("noProgress ", noProgress)
+            print("--------------------------")
+        end
+    Citizen.Wait(2000)
+    end
+end)

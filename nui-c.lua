@@ -22,7 +22,6 @@ AddEventHandler("nui:on", function(value)
         type = "Display",
         state = true
     })
-    --print(state, "sent")
 end)
 
 
@@ -32,15 +31,11 @@ AddEventHandler("nui:off", function()
         type = "Display",
         state = false
     })
-    --print(state, "sent")
 end)
 
 RegisterNetEvent("nui:update")
 AddEventHandler("nui:update", function(water)
     if water ~= nil then
-        print(water)
-        debug = debug + 1
-        print(debug)
         SendNUIMessage({
             type = "waterLevel",
             tankStatus = water

@@ -1,7 +1,8 @@
 -- Config File --
+
 -- FWMS Version --
 
-FWMSVersion = " v0.1 "
+FWMSVersion = " v0.2 "
 
 -- Firetruck Models --
 

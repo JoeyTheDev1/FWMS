@@ -20,7 +20,6 @@ $(function(){
             //document.querySelector("#logo").innerHTML = " "
 			var item = event.data;
 			if (item !== undefined && item.type === "waterLevel") {
-				console.log(item.tankStatus)
 				if (item.tankStatus === 100) {
 					$("#Full").show();
 					$("#ThreeFour").hide();
@@ -39,7 +38,6 @@ $(function(){
 				} else if (item.tankStatus >= 0) {
 					$("#OneFour").hide();
 					$("#Empty").show();
-					console.log("We're here.")
 				}else {
 					$("#Full").hide();
 					$("#ThreeFour").hide();
