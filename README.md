@@ -8,4 +8,4 @@ Basic functionality allows users to retrieve a fire extinguisher from a nearby e
 This script by default uses t-notify, which you can get here: https://github.com/TasoOneAsia/t-notify
 
 ## Discord
-To ask questions, get support, and follow additional progress with this script, you can join our discord: https://discord.link/JoeyTheDev
+To ask questions, get support, and follow additional progress with this script, you can join my discord: https://discord.link/JoeyTheDev
