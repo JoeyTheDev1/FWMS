@@ -9,3 +9,6 @@ This script by default uses t-notify, which you can get here: https://github.com
 
 ## Discord
 To ask questions, get support, and follow additional progress with this script, you can join my discord: https://discord.link/JoeyTheDev
+
+
+Special Thanks to TrevorBarns for helping me out with this and helping me make it better!
