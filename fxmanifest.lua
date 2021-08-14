@@ -16,11 +16,7 @@ files{
     "html/style.css",
     "html/reset.css",
     "html/listener.js",
-    "html/FWMS-Full.png",
-    "html/FWMS-3-4.png",
-    "html/FWMS-1-2.png",
-    "html/FWMS-1-3.png",
-    "html/FWMS-Empty.png"
+    "html/images/*.png",
 }
 
 shared_script 'config.lua'

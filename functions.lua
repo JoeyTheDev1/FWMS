@@ -47,3 +47,10 @@ function Draw3DText(x, y, z, scl_factor, text)
         DrawText(_x, _y)
     end
 end
+
+function notification(message)
+    BeginTextCommandThefeedPost("STRING")
+    SetColourOfNextTextComponent(9)
+    AddTextComponentSubstringPlayerName(message)
+    EndTextCommandThefeedPostTicker(true, true)
+end
