@@ -19,6 +19,7 @@ local findHydrant = false
 local waterConnected = false
 local holdingSupplyLine = false
 local debugMode = false
+local hoseHash = GetHashKey("weapon_hose")
 
 -- Progress Management Variables --
 local noProgress = true
@@ -74,13 +75,25 @@ Citizen.CreateThread(function()
             if isFireTruckClose() == true then
                 if lineInHand == false then
                     if IsControlJustReleased(0, 54) then
-                        GiveWeaponToPed(GetPlayerPed(-1), 0x060EC506, 100, false, true)
-                        AddAmmoToPed(GetPlayerPed(-1), 0x060EC506, 100)
+                        if hoseOption == "extinguisher" then
+                            GiveWeaponToPed(GetPlayerPed(-1), 0x060EC506, 100, false, true)
+                            AddAmmoToPed(GetPlayerPed(-1), 0x060EC506, 100)
+                        elseif hoseOption == "hoseLS" then
+                            ExecuteCommand("hose")
+                        else
+                            print("ERROR: Check config.lua, your hoseOption variable is set incorrectly!")
+                        end
                         lineInHand = true
                     end
                 else
                     if IsControlJustReleased(0, 54) then
-                        RemoveWeaponFromPed(GetPlayerPed(-1), 0x060EC506)
+                        if hoseOption == "extinguisher" then
+                            RemoveWeaponFromPed(GetPlayerPed(-1), 0x060EC506)
+                        elseif hoseOption == "hoseLS" then
+                            ExecuteCommand("hose")
+                        else
+                            print("ERROR: Check config.lua, your hoseOption variable is set incorrectly!")
+                        end
                         lineInHand = false
                     end
                 end
@@ -95,11 +108,20 @@ end)
 Citizen.CreateThread(function()
     while true do
         if lineInHand == true then
-            if IsControlPressed(0, 24) and IsPedShooting(GetPlayerPed(-1)) then
-                Citizen.Wait(1000)
-				if waterLevel > 0 then
-					TriggerServerEvent("reduceWaterLevel", activeVehicle, waterConnected)
-				end
+            if waterLevel > 0 then
+                if hoseOption == "extinguisher" then
+                    if IsControlPressed(0, 24) and IsPedShooting(GetPlayerPed(-1)) then
+                        Citizen.Wait(1000)
+                        TriggerServerEvent("reduceWaterLevel", activeVehicle, waterConnected)
+                    end
+                elseif hoseOption == "hoseLS" then
+                    if GetSelectedPedWeapon(PlayerPedId(-1)) == hoseHash and IsDisabledControlPressed(0, 24) then
+                        Citizen.Wait(1000)
+                        TriggerServerEvent("reduceWaterLevel", activeVehicle, waterConnected)
+                    end
+                else
+                    print("ERROR: Check config.lua, your hoseOption variable is set incorrectly!")
+                end
             end
         end
     Citizen.Wait(5)
@@ -244,19 +266,31 @@ Citizen.CreateThread(function()
                     holdingSupplyLine = true
                     begunHydrant = false
                     hydrantConnectedSupply = true
-                    exports['t-notify']:Alert({
+                    if notiPref == "default" then
+                        notification("Line connected to hydrant, return to your truck to connect to your engine.")
+                    elseif notiPref == "tNotify" then
+                        exports['t-notify']:Alert({
                         style = 'success', 
                         message = 'Line connected to hydrant, return to your truck to connect to your engine.'
-                    })
+                        })
+                    else
+                        print("ERROR: Notification Preference Undefined, Check Your Config.lua file!")
+                    end
                 end
             elseif findHydrant == false and waterConnected == true then
                 if IsControlJustReleased(0, 54) then
                     holdingSupplyLine = false
                     waterConnected = false
-                    exports['t-notify']:Alert({
-                        style = 'success', 
-                        message = 'Line disconnected from hydrant.'
-                    })
+                    if notiPref == "default" then
+                        notification("Line disconnected from hydrant")
+                    elseif notiPref == "tNotify" then
+                        exports['t-notify']:Alert({
+                            style = 'success', 
+                            message = 'Line disconnected from hydrant.'
+                        })
+                    else
+                        print("ERROR: Notification Preference Undefined, Check Your Config.lua file!")
+                    end
                     noProgress = true
                     allConnected = false
                 end
@@ -272,10 +306,16 @@ Citizen.CreateThread(function()
     while true do
         if isFireTruckClose() == true and holdingSupplyLine == true then
             if IsControlJustReleased(0, 29) then
-                exports['t-notify']:Alert({
-                    style = 'success', 
-                    message = 'Line Connected!'
-                })
+                if notiPref == "default" then
+                    notification("Line Connected!")
+                elseif notiPref == "tNotify" then
+                    exports['t-notify']:Alert({
+                        style = 'success', 
+                        message = 'Line Connected!'
+                    })
+                else
+                    print("ERROR: Notification Preference Undefined, Check Your Config.lua file!")
+                end
                 holdingSupplyLine = false
                 waterConnected = true
                 findHydrant = false
@@ -284,11 +324,16 @@ Citizen.CreateThread(function()
             end
         elseif isFireTruckClose() == true and allConnected == true then
             if IsControlJustReleased(0, 29) then
-                exports['t-notify']:Alert({
-                    style = 'success', 
-                    message = 'Line Disconnected!'
-                })
-                print("Line disconnected")
+                if notiPref == "default" then
+                    notification("Line Disconnected!")
+                elseif notiPref == "tNotify" then
+                    exports['t-notify']:Alert({
+                        style = 'success', 
+                        message = 'Line Disconnected!'
+                    })
+                else
+                    print("ERROR: Notification Preference Undefined, Check Your Config.lua file!")
+                end
                 findHydrant = false
                 holdingSupplyLine = false
                 waterConnected = false
@@ -313,6 +358,7 @@ Citizen.CreateThread(function()
     end
 end)
 
+-- End Hydrant Section --
 
 print("Fire Water Management System" .. FWMSVersion .. "Loaded Successfully")
 

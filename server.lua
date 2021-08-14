@@ -17,7 +17,7 @@ end)
 
 AddEventHandler("reduceWaterLevel", function(vehID, hydrantConnection)
     if hydrantConnection == false then
-        waterLevel[vehID] = waterLevel[vehID] - 5
+        waterLevel[vehID] = waterLevel[vehID] - dischargeSpeed
         TriggerClientEvent("hydrantAvailable", source)
     elseif hydrantConnection == true then
         if waterLevel[vehID] < 100 then
