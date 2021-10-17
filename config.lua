@@ -2,7 +2,7 @@
 
 -- FWMS Version --
 
-FWMSVersion = " v0.25 "
+FWMSVersion = " v0.26 "
 
 -- Firetruck Models --
 

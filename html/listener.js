@@ -20,7 +20,7 @@ $(function(){
             //document.querySelector("#logo").innerHTML = " "
 			var item = event.data;
 			if (item !== undefined && item.type === "waterLevel") {
-				if (item.tankStatus === 100) {
+				if (item.tankStatus >= 100) {
 					$("#Full").show();
 					$("#ThreeFour").hide();
 					$("#OneHalf").hide();
